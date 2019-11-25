@@ -6,7 +6,7 @@
 -export([foo/0,parse_file/1,parse_binary/1]).
 
 -define(PROVIDER, compile).
--define(DEPS, [app_discovery]).
+-define(DEPS, [{default, app_discovery}]).
 
 %% ===================================================================
 %% Public API
