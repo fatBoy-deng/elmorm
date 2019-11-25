@@ -1,4 +1,4 @@
--module(elmorm_diff).
+-module(rebar3_elmorm_diff).
 
 -include("elmorm.hrl").
 
@@ -74,13 +74,13 @@ modify_columns(FieldsA, FieldsB, Add) ->
         insert_field(X, InAcc)
     end, FieldsA, Add),
     F = fun(X, InAcc) ->
-        elmorm_dlink:append(X#elm_field.name, InAcc)
+        rebar3_elmorm_dlink:append(X#elm_field.name, InAcc)
     end,
-    DLA = lists:foldl(F, elmorm_dlink:empty(), FieldsA1),
-    DLB = lists:foldl(F, elmorm_dlink:empty(), FieldsB),
+    DLA = lists:foldl(F, rebar3_elmorm_dlink:empty(), FieldsA1),
+    DLB = lists:foldl(F, rebar3_elmorm_dlink:empty(), FieldsB),
     Standard = init_standard(FieldsB),
     InitScore = calc_score(DLA, Standard),
-    {ok, modify_columns_loop(FieldsB, FieldsA1, elmorm_dlink:head(DLA), DLA, DLB, InitScore, Standard, [])}.
+    {ok, modify_columns_loop(FieldsB, FieldsA1, rebar3_elmorm_dlink:head(DLA), DLA, DLB, InitScore, Standard, [])}.
 
 modify_columns_loop(FieldsB, FieldsA, _Cur, _DLA, _DLB, 0, _Standard, R) ->
     NewR = 
@@ -96,29 +96,29 @@ modify_columns_loop([#elm_field{name = Cur} = H | T], FieldsA, Cur, DLA, DLB, Sc
     OldH = lists:keyfind(Cur, #elm_field.name, FieldsA),
     case OldH#elm_field{seq = 0, pre_col_name = <<>>} =:= H#elm_field{seq = 0, pre_col_name = <<>>} of
     true ->
-        {ok, Next} = elmorm_dlink:next(Cur, DLA),
+        {ok, Next} = rebar3_elmorm_dlink:next(Cur, DLA),
         modify_columns_loop(T, FieldsA, Next, DLA, DLB, Score, Standard, R);
     false ->
-        {ok, Next} = elmorm_dlink:next(Cur, DLA),
+        {ok, Next} = rebar3_elmorm_dlink:next(Cur, DLA),
         modify_columns_loop(T, FieldsA, Next, DLA, DLB, Score, Standard, [H | R])
     end;
 modify_columns_loop([H | T], FieldsA, Cur, DLA, DLB, _Score, Standard, R) ->
     #elm_field{name = Name, pre_col_name = PreColName} = H,
     %% op-1 move H to here
-    DLA_OP1_1 = elmorm_dlink:delete(Name, DLA),
-    DLA_OP1_2 = elmorm_dlink:insert(Name, PreColName, DLA_OP1_1),
+    DLA_OP1_1 = rebar3_elmorm_dlink:delete(Name, DLA),
+    DLA_OP1_2 = rebar3_elmorm_dlink:insert(Name, PreColName, DLA_OP1_1),
     Score_OP1 = calc_score(DLA_OP1_2, Standard),
 
     %% op-2 move Cur to right
-    {ok, Next_OP2} = elmorm_dlink:next(Cur, DLA),
+    {ok, Next_OP2} = rebar3_elmorm_dlink:next(Cur, DLA),
     CurFieldOP2 = lists:keyfind(Cur, #elm_field.name, T),
-    DLA_OP2_1 = elmorm_dlink:delete(Cur, DLA),
-    DLA_OP2_2 = elmorm_dlink:insert(Cur, CurFieldOP2#elm_field.pre_col_name, DLA_OP2_1),
+    DLA_OP2_1 = rebar3_elmorm_dlink:delete(Cur, DLA),
+    DLA_OP2_2 = rebar3_elmorm_dlink:insert(Cur, CurFieldOP2#elm_field.pre_col_name, DLA_OP2_1),
     Score_OP2 = calc_score(DLA_OP2_2, Standard),
 
     case Score_OP1 =< Score_OP2 of
     true -> %% use op-1
-        {ok, NewCur} = elmorm_dlink:next(Name, DLA_OP1_2),
+        {ok, NewCur} = rebar3_elmorm_dlink:next(Name, DLA_OP1_2),
         modify_columns_loop(T, FieldsA, NewCur, DLA_OP1_2, DLB, Score_OP1, Standard, [H | R]);
     false -> %% use op-2
         modify_columns_loop([H | T], FieldsA, Next_OP2, DLA_OP2_2, DLB, Score_OP2, Standard, [CurFieldOP2 | R])
@@ -136,7 +136,7 @@ calc_score(DLA, StandardM) ->
     lists:foldl(fun(Name, {InIndex, InScore}) ->
         V = maps:get(Name, StandardM),
         {InIndex + 1, erlang:abs(V - InIndex) + InScore}
-    end, {1, 0}, elmorm_dlink:to_list(DLA)),
+    end, {1, 0}, rebar3_elmorm_dlink:to_list(DLA)),
     Score.
 
 insert_field(#elm_field{pre_col_name = undefined} = Field, L) ->

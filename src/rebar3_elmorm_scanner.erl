@@ -6,7 +6,7 @@
 %% property of the creator of the scanner and is not covered by that
 %% Copyright.
 
--module(elmorm_scanner).
+-module(rebar3_elmorm_scanner).
 
 -export([string/1,string/2,token/2,token/3,tokens/2,tokens/3]).
 -export([format_error/1]).

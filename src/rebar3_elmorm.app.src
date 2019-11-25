@@ -1,4 +1,4 @@
-{application, elmorm,
+{application, rebar3_elmorm,
  [{description, "a simple light ORM tool for mysql"},
   {vsn, "0.1.0"},
   {registered, []},

@@ -1,4 +1,4 @@
--module(elmorm_parser).
+-module(rebar3_elmorm_parser).
 -export([parse/1, parse_and_scan/1, format_error/1]).
 -file("e:/tianming_branch/20191108/elmorm/src/elmorm_parser.yrl", 172).
 unwrap({_, _, V}) -> V;

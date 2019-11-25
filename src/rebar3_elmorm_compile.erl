@@ -1,4 +1,4 @@
--module(elmorm_compile).
+-module(rebar3_elmorm_compile).
 
 -include("elmorm.hrl").
 
@@ -40,7 +40,7 @@ do(State) ->
                    [AppInfo]
            end,
     lists:foreach(fun(App) ->
-        elmorm_compare:foo2(App, State)
+        rebar3_elmorm_compare:foo2(App, State)
                   end, Apps),
     {ok, State}.
 
@@ -55,9 +55,9 @@ parse_file(FileName) ->
     case file:read_file(FileName) of
     {ok, Binary} ->
         List = unicode:characters_to_list(Binary),
-        case elmorm_scanner:string(List) of
+        case rebar3_elmorm_scanner:string(List) of
         {ok, Tokens, _Line} ->
-            case elmorm_parser:parse(Tokens) of
+            case rebar3_elmorm_parser:parse(Tokens) of
             {ok, Parsed} ->
                 collect_tables(Parsed);
             {error, Error} ->
@@ -72,9 +72,9 @@ parse_file(FileName) ->
 
 parse_binary(Binary) ->
     List = unicode:characters_to_list(Binary),
-    case elmorm_scanner:string(List) of
+    case rebar3_elmorm_scanner:string(List) of
         {ok, Tokens, _Line} ->
-            case elmorm_parser:parse(Tokens) of
+            case rebar3_elmorm_parser:parse(Tokens) of
                 {ok, Parsed} ->
                     collect_tables(Parsed);
                 {error, Error} ->

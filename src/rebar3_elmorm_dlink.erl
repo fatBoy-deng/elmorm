@@ -1,4 +1,4 @@
--module(elmorm_dlink).
+-module(rebar3_elmorm_dlink).
 
 -export([empty/0, insert/2, insert/3, append/2, delete/2, to_list/1, foldl/3, 
     lookup/2, head/1, next/2]).

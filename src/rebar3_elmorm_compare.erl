@@ -1,4 +1,4 @@
--module(elmorm_compare).
+-module(rebar3_elmorm_compare).
 
 -include("elmorm.hrl").
 
@@ -129,9 +129,9 @@ execute(DBPool,Sql) when is_list(Sql) orelse is_binary(Sql) ->
 
 %% convert file1 to file2, output to file3
 compare(File1, File2, File3) when is_list(File1) ->
-  case elmorm_compile:parse_file(File1) of
+  case rebar3_elmorm_compile:parse_file(File1) of
     {ok, Tables1} ->
-      case elmorm_compile:parse_file(File2) of
+      case rebar3_elmorm_compile:parse_file(File2) of
         {ok, Tables2} ->
           Bin = compare_tables(Tables2, Tables1),
           case file:open(File3, [binary, write]) of
@@ -149,9 +149,9 @@ compare(File1, File2, File3) when is_list(File1) ->
       {error, Error}
   end;
 compare(Binary, File2, File3) when is_binary(Binary) ->
-  case elmorm_compile:parse_binary(Binary) of
+  case rebar3_elmorm_compile:parse_binary(Binary) of
     {ok, Tables1} ->
-      case elmorm_compile:parse_file(File2) of
+      case rebar3_elmorm_compile:parse_file(File2) of
         {ok, Tables2} ->
           Bin = compare_tables(Tables2, Tables1),
           case file:open(File3, [binary, write]) of
@@ -194,7 +194,7 @@ drop_table(Name) ->
 table_diff(TableA, TableB) ->
   TName = TableA#elm_table.name,
   ALTER = <<"ALTER TABLE `", TName/binary, "` ">>,
-  {ok, DiffMap} = elmorm_diff:diff(TableA, TableB),
+  {ok, DiffMap} = rebar3_elmorm_diff:diff(TableA, TableB),
   #{
     table_opt_diff := TableOptDiff,
     col_remove := ColDrops,
