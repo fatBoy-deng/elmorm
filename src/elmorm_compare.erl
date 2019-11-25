@@ -26,7 +26,9 @@ foo() ->
   compare("./a.kkk", "test.kkk", "./output.sql").
 
 foo2(AppInfo,_State) ->
+  io:format("do_foo.................",[]),
   Opts = rebar_app_info:opts(AppInfo),
+  io:format("Opts:~p~n",[Opts]),
   case read_elmorm_opts(Opts) of
     {ok, RAO} ->
       rebar_api:debug("opts is : ~p", [RAO]),
