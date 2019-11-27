@@ -45,7 +45,7 @@ do(State) ->
            AppInfo ->
              [AppInfo]
          end,
-  case length(Arguments >= 5) of
+  case length(Arguments) >= 5 of
     true ->
       OldVersion = lists:nth(4, Arguments),
       NewVersion = lists:nth(5, Arguments),
