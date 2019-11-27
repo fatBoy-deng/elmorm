@@ -145,8 +145,8 @@ rename_file(FileName,Index)->
 
 excute_svn_cmd(Version,Path,UserName,PassWord)->
   Cmd = "svn export -r ~p ~p --no-auth-cache --non-interactive --username ~p --password ~p",
-  io_lib:format(Cmd,[Version,Path,UserName,PassWord]),
-  os:cmd(Cmd).
+  FinCmd = io_lib:format(Cmd,[Version,Path,UserName,PassWord]),
+  os:cmd(FinCmd).
 
 read_svn_elmorm_opts(Opts) ->
   case dict:find(svn_elmorm_opts, Opts) of
