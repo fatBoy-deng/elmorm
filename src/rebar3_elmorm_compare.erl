@@ -4,7 +4,8 @@
 
 -export([
   foo/0,
-  foo2/2
+  foo2/2,
+  svn_file_compare/4
 ]).
 
 -define(NEWLINE, <<"\n">>).
@@ -19,6 +20,13 @@
   db_port,
   encoding,
   compare_file_path,
+  output_file_path
+}).
+
+-record(svn_elmorm_opts,{
+  path,
+  username,
+  password,
   output_file_path
 }).
 
@@ -99,6 +107,70 @@ read_elmorm_opts_1([KV | T], R) ->
 
 default_opts() ->
   #elmorm_opts{}.
+
+svn_file_compare(AppInfo,OldVersion,NewVersion,_State)->
+  Opts = rebar_app_info:opts(AppInfo),
+  case read_svn_elmorm_opts(Opts) of
+    {ok,Opt}  ->
+      #svn_elmorm_opts{
+        path = Path,
+        username = UserName,
+        password = PassWord,
+        output_file_path = OutPutPath
+      }=Opt,
+      excute_svn_cmd(OldVersion,Path,UserName,PassWord),
+      PathList = string:tokens(Path,"/"),
+      FileName1 = hd(lists:reverse(PathList)),
+      OldVerFileName = rename_file(FileName1,1),
+      excute_svn_cmd(NewVersion,Path,UserName,PassWord),
+      NewVerFileName = rename_file(FileName1,2),
+      compare(OldVerFileName, NewVerFileName, OutPutPath),
+      del_file([OldVerFileName,NewVerFileName]),
+      ok;
+    _ ->
+      ok
+  end.
+
+del_file([])->
+  ok;
+del_file([H|T])->
+  file:delete(H),
+  del_file(T).
+
+rename_file(FileName,Index)->
+  FinFinName = lists:concat([FileName,"_",Index]),
+  ok = file:rename(FileName,FinFinName),
+  FinFinName.
+
+excute_svn_cmd(Version,Path,UserName,PassWord)->
+  Cmd = "svn export -r ~p ~p --no-auth-cache --non-interactive --username ~p --password ~p",
+  io_lib:format(Cmd,[Version,Path,UserName,PassWord]),
+  os:cmd(Cmd).
+
+read_svn_elmorm_opts(Opts) ->
+  case dict:find(svn_elmorm_opts, Opts) of
+    {ok, OptsL} ->
+      {ok, read_svn_elmorm_opts_1(OptsL, default_svn_opts())};
+    error ->
+      %% throw ???
+      {ok, default_svn_opts()}
+  end.
+
+read_svn_elmorm_opts_1([], R) -> R;
+read_svn_elmorm_opts_1([{path, V} | T], R) ->
+  read_svn_elmorm_opts_1(T, R#svn_elmorm_opts{path = V});
+read_svn_elmorm_opts_1([{username, V} | T], R) ->
+  read_svn_elmorm_opts_1(T, R#svn_elmorm_opts{username = V});
+read_svn_elmorm_opts_1([{password, V} | T], R) ->
+  read_svn_elmorm_opts_1(T, R#svn_elmorm_opts{password = V});
+read_svn_elmorm_opts_1([{output_file_path, V} | T], R) ->
+  read_svn_elmorm_opts_1(T, R#svn_elmorm_opts{output_file_path = V});
+read_svn_elmorm_opts_1([KV | T], R) ->
+  rebar_api:error("unknow opts : ~p", [KV]),
+  read_svn_elmorm_opts_1(T, R).
+
+default_svn_opts() ->
+  #svn_elmorm_opts{}.
 
 get_create_tables_bin(_DBPool,[],Ret)->
   Ret;

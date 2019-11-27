@@ -9,7 +9,7 @@
 -module(rebar3_elmorm_svn_compile).
 -author("deng").
 
--export([init/1, do/1,format_error/1]).
+-export([init/1, do/1, format_error/1]).
 
 -define(PROVIDER, svn_compile).
 -define(DEPS, [{default, app_discovery}]).
@@ -24,7 +24,7 @@
 init(State) ->
   Provider = providers:create([
     {name, ?PROVIDER},            % The 'user friendly' name of the task
-    {namespace,elmorm},
+    {namespace, elmorm},
     {module, ?MODULE},            % The module implementation of the task
     {bare, true},                 % The task can be run by the user, always true
     {deps, ?DEPS},                % The list of dependencies
@@ -38,16 +38,25 @@ init(State) ->
 
 -spec do(rebar_state:t()) -> {ok, rebar_state:t()} | {error, string()}.
 do(State) ->
-  Argument = init:get_plain_arguments(),
-  _Apps = case rebar_state:current_app(State) of
+  Arguments = init:get_plain_arguments(),
+  Apps = case rebar_state:current_app(State) of
            undefined ->
              rebar_state:project_apps(State);
            AppInfo ->
              [AppInfo]
          end,
-  io:format("Argument=~p~n",[Argument]),
+  case length(Arguments >= 5) of
+    true ->
+      OldVersion = lists:nth(4, Arguments),
+      NewVersion = lists:nth(5, Arguments),
+      lists:foreach(fun(App) ->
+        rebar3_elmorm_compare:svn_file_compare(App, OldVersion, NewVersion, State)
+                    end, Apps);
+    false ->
+      io_lib:format("not_enough_arg", [])
+  end,
   {ok, State}.
 
--spec format_error(any()) ->  iolist().
+-spec format_error(any()) -> iolist().
 format_error(Reason) ->
   io_lib:format("~p", [Reason]).
