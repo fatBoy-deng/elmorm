@@ -118,10 +118,9 @@ svn_file_compare(AppInfo,OldVersion,NewVersion,_State)->
         password = PassWord,
         output_file_path = OutPutPath
       }=Opt,
-      Result = excute_svn_cmd(OldVersion,Path,UserName,PassWord),
+      excute_svn_cmd(OldVersion,Path,UserName,PassWord),
       PathList = string:tokens(Path,"/"),
       FileName1 = hd(lists:reverse(PathList)),
-      io:format("Result=~p,FileName1=~p~n",[Result,FileName1]),
       OldVerFileName = rename_file(FileName1,1),
       excute_svn_cmd(NewVersion,Path,UserName,PassWord),
       NewVerFileName = rename_file(FileName1,2),
